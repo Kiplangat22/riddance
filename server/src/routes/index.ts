@@ -1,7 +1,7 @@
-import { Router } from "express";
+import express from "express";
 import healthRoutes from "../modules/health/health.routes.js";
 
-const router = Router();
+const router: express.Router = express.Router();
 
 router.use("/health", healthRoutes);
 
