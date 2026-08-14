@@ -1,6 +1,8 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { env } from "./config/env.js";
+import { requestLogger } from "./middleware/logger.middleware.js";
 import routes from "./routes/index.js";
 import { notFoundHandler } from "./middleware/notFound.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
@@ -8,8 +10,9 @@ import { errorHandler } from "./middleware/error.middleware.js";
 const app: Express = express();
 
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
+app.use(requestLogger);
+app.use(cors({ origin: env.CORS_ORIGIN.split(",").map((origin) => origin.trim()) }));
+app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
 
 app.use("/api/v1", routes);
 
