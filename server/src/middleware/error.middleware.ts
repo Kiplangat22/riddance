@@ -1,19 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
 import { logger } from "../config/logger.js";
-
-interface AppError extends Error {
-  statusCode?: number;
-  status?: number;
-}
+import { ZodError } from "zod";
+import { AppError } from "../shared/errors/app-error.js";
 
 export function errorHandler(
-  err: AppError,
+  err: Error & { status?: number },
   req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
-  const statusCode = err.statusCode ?? err.status ?? 500;
-  const message = statusCode >= 500 ? "Internal Server Error" : err.message;
+  const statusCode = err instanceof ZodError ? 400 : err instanceof AppError ? err.statusCode : err.status ?? 500;
+  const message = err instanceof ZodError ? "Invalid request data" : statusCode >= 500 ? "Internal Server Error" : err.message;
 
   logger.error(
     { err, path: req.originalUrl, method: req.method },
@@ -23,5 +20,6 @@ export function errorHandler(
   res.status(statusCode).json({
     success: false,
     message,
+    ...(err instanceof ZodError ? { issues: err.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })) } : {}),
   });
 }
