@@ -1,18 +1,21 @@
-/**
- * index.ts
- * Application entry point.
- * Starts the HTTP server.
- */
-import dotenv from "dotenv";
 import app from "./app.js";
+import { env } from "./config/env.js";
+import { logger } from "./config/logger.js";
 
-// import dotenv from "dotenv";
-// import app from "./app";
-
-dotenv.config();
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 RIDDANCE API is running at http://localhost:${PORT}`);
+const server = app.listen(env.PORT, () => {
+  logger.info({ port: env.PORT }, "RIDDANCE API running");
 });
+
+function shutdown(signal: string): void {
+  logger.info({ signal }, "Shutting down RIDDANCE API");
+  server.close((error) => {
+    if (error) {
+      logger.error({ err: error }, "Error while closing server");
+      process.exitCode = 1;
+    }
+    process.exit();
+  });
+}
+
+process.once("SIGINT", () => shutdown("SIGINT"));
+process.once("SIGTERM", () => shutdown("SIGTERM"));
