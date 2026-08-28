@@ -1,25 +1,41 @@
 import type { Request, Response, NextFunction } from "express";
-import { logger } from "../config/logger.js";
 import { ZodError } from "zod";
+import { logger } from "../config/logger.js";
 import { AppError } from "../shared/errors/app-error.js";
 
+interface HttpishError extends Error {
+  status?: number;
+  statusCode?: number;
+}
+
+function resolveStatusCode(err: HttpishError): number {
+  if (err instanceof ZodError) return 400;
+  if (err instanceof AppError) return err.statusCode;
+  return err.statusCode ?? err.status ?? 500;
+}
+
 export function errorHandler(
-  err: Error & { status?: number },
+  err: HttpishError,
   req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
-  const statusCode = err instanceof ZodError ? 400 : err instanceof AppError ? err.statusCode : err.status ?? 500;
-  const message = err instanceof ZodError ? "Invalid request data" : statusCode >= 500 ? "Internal Server Error" : err.message;
+  const statusCode = resolveStatusCode(err);
+  const message =
+    err instanceof ZodError
+      ? "Invalid request data"
+      : statusCode >= 500
+        ? "Internal Server Error"
+        : err.message;
 
-  logger.error(
-    { err, path: req.originalUrl, method: req.method },
-    err.message || "Unhandled error",
-  );
+  const log = statusCode >= 500 ? logger.error.bind(logger) : logger.warn.bind(logger);
+  log({ err, path: req.originalUrl, method: req.method }, err.message || "Request failed");
 
   res.status(statusCode).json({
     success: false,
     message,
-    ...(err instanceof ZodError ? { issues: err.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })) } : {}),
+    ...(err instanceof ZodError
+      ? { issues: err.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })) }
+      : {}),
   });
 }

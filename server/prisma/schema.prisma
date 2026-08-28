@@ -10,4 +10,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+// No models yet: the app currently uses an in-memory repository
+// (server/src/modules/activities/activity.repository.ts). When persistence is
+// wired up, add an `Activity` model here and a PrismaActivityRepository.
