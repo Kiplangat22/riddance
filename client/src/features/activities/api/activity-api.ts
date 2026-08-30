@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../../lib/config";
 import { apiRequest } from "../../../lib/http";
 import type {
   Activity,
@@ -7,7 +8,7 @@ import type {
   UpdateActivityInput,
 } from "../types";
 
-const BASE_URL = "/api/v1/activities";
+const BASE_URL = `${API_BASE_URL}/api/v1/activities`;
 
 export const activityApi = {
   list: (type?: ActivityType): Promise<Activity[]> =>

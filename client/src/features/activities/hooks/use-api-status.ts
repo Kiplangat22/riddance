@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../../lib/config";
 
 export type ApiStatus = "checking" | "online" | "offline";
 
@@ -8,7 +9,7 @@ export function useApiStatus(): ApiStatus {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/v1/health")
+    fetch(`${API_BASE_URL}/api/v1/health`)
       .then((response) => {
         if (!cancelled) setStatus(response.ok ? "online" : "offline");
       })
