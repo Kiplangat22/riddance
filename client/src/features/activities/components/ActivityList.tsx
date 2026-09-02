@@ -1,5 +1,5 @@
 import { activityTypes } from "../types";
-import type { Activity, ActivityType } from "../types";
+import type { Activity, ActivityType, UpdateActivityInput } from "../types";
 import { ActivityItem } from "./ActivityItem";
 
 interface ActivityListProps {
@@ -8,11 +8,12 @@ interface ActivityListProps {
   filter: ActivityType | "All";
   onFilterChange: (filter: ActivityType | "All") => void;
   onRemove: (id: string) => void;
+  onUpdate: (id: string, input: UpdateActivityInput) => Promise<void>;
 }
 
 const filters: Array<ActivityType | "All"> = ["All", ...activityTypes];
 
-export function ActivityList({ activities, isLoading, filter, onFilterChange, onRemove }: ActivityListProps) {
+export function ActivityList({ activities, isLoading, filter, onFilterChange, onRemove, onUpdate }: ActivityListProps) {
   return (
     <div className="activity-log">
       <div className="filter-bar" role="tablist" aria-label="Filter activities">
@@ -38,7 +39,12 @@ export function ActivityList({ activities, isLoading, filter, onFilterChange, on
       ) : (
         <div className="activity-items">
           {activities.map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} onRemove={onRemove} />
+            <ActivityItem
+              key={activity.id}
+              activity={activity}
+              onRemove={onRemove}
+              onUpdate={onUpdate}
+            />
           ))}
         </div>
       )}

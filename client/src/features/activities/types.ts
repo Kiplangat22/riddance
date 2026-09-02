@@ -16,6 +16,8 @@ export interface Activity {
   durationMinutes: number;
   distanceKm: number | null;
   notes: string | null;
+  source?: string;
+  externalId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -13,6 +11,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// No models yet: the app currently uses an in-memory repository
-// (server/src/modules/activities/activity.repository.ts). When persistence is
-// wired up, add an `Activity` model here and a PrismaActivityRepository.
+model Activity {
+  id              String   @id @default(uuid())
+  type            String
+  title           String
+  date            String
+  durationMinutes Int
+  distanceKm      Float?
+  notes           String?
+  source          String   @default("manual")
+  externalId      String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StravaToken {
+  id           String   @id @default("singleton")
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  athleteId    Int      @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
